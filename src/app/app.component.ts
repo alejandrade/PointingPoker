@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import {Component, NgModule} from '@angular/core';
+import {User} from './model/user';
 
 @Component({
   selector: 'app-root',
@@ -6,5 +7,5 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'PointingPoker';
+  title = 'Pointing Poker';
 }

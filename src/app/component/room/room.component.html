@@ -1,0 +1,58 @@
+<div class="">
+  <div class="card">
+    <div class="card-header">{{room.id}}</div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-5">
+          <input type="text" class="form-control" placeholder="Story" name="storyName" id="storyName" [ngModel]="getStory().storyName"/>
+        </div>
+        <div class="col-6">
+          <span *ngIf="room.showVotes">{{getStory().score}}</span>
+          <span *ngIf="!room.showVotes">?</span>
+        </div>
+      </div>
+      <table class="table table-sm">
+        <thead>
+        <tr>
+          <th scope="col">User</th>
+          <th scope="col">Vote</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let user of room.users">
+          <td>{{user.name}}</td>
+          <td>
+            <span *ngIf="room.showVotes">{{user.vote}}</span>
+            <span *ngIf="!room.showVotes">?</span>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <br>
+  <div class="row">
+    <div class="btn-group contentCenter" role="group" aria-label="Basic example">
+      <button class="btn btn-info" (click)="vote(0)">0</button>
+      <button class="btn btn-info" (click)="vote(.5)">1/2</button>
+      <button class="btn btn-info" (click)="vote(1)">1</button>
+      <button class="btn btn-info" (click)="vote(2)">2</button>
+      <button class="btn btn-info" (click)="vote(3)">3</button>
+      <button class="btn btn-info" (click)="vote(5)">5</button>
+      <button class="btn btn-info" (click)="vote(8)">8</button>
+      <button class="btn btn-info" (click)="vote(13)">13</button>
+      <button class="btn btn-info" (click)="vote(20)">20</button>
+      <button class="btn btn-info" (click)="vote(40)">40</button>
+      <button class="btn btn-info" (click)="vote(100)">100</button>
+    </div>
+  </div>
+  <hr>
+  <div class="row contentCenter">
+    <div class="col-6">
+      <button class="btn btn-primary" (click)="clearVotes()">Clear Votes</button>
+    </div>
+    <div class="col-6">
+      <button class="btn btn-primary" (click)="showVotes(true)">Show Votes</button>
+    </div>
+  </div>
+</div>
