@@ -6,6 +6,7 @@ import {falseIfMissing} from 'protractor/built/util';
 import {Story} from '../../model/story';
 import {StompHandlerService} from '../../service/stomp-handler.service';
 import {WebSocketChatMessage} from '../../model/webSocketChatMessage';
+import {bsDatepickerReducer} from 'ngx-bootstrap/datepicker/reducer/bs-datepicker.reducer';
 
 @Component({
   selector: 'app-room',
@@ -37,17 +38,47 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   vote(num: number) {
     this.currentUser.vote = num;
+    let avergageVote = 0;
+    this.synchronizeIterate((user) => {
+      if (this.currentUser.name === user.name) {
+        user.vote = num;
+      }
+      if (user.vote) {
+        avergageVote += user.vote;
+      }
+    });
+
+    const currentStory = this.room.currentStory || new Story();
+    currentStory.score = avergageVote;
+    this.room.currentStory = currentStory;;
+
+    this.stompHandler.publish(this.room, this.currentUser.name);
   }
 
   showVotes(show: boolean) {
     this.room.showVotes = show;
+    this.synchronizeIterate((user) => {
+      if (this.currentUser.name === user.name) {
+        this.room.showVotes = show;
+      }
+    });
+    this.stompHandler.publish(this.room, this.currentUser.name);
   }
 
   clearVotes() {
-    this.room.users.forEach(user => {
+    this.synchronizeIterate((user) => {
       delete user.vote;
       this.showVotes(false);
     });
+    const story = this.room.currentStory;
+    if (!story.storyName) {
+      story.storyName = Math.random().toString(36).substr(2, 9);
+    }
+
+    this.room.stories.push(story);
+    delete this.room.currentStory;
+
+    this.stompHandler.publish(this.room, this.currentUser.name);
   }
 
   getStory(): Story {
@@ -55,11 +86,10 @@ export class RoomComponent implements OnInit, OnDestroy {
     return currentStory == null ? new Story() : currentStory;
   }
 
-  addToHistory() {
-  }
-
-  publish() {
-    // publish to servers
+  synchronizeIterate(action: (user: User) => void) {
+    for (const user of this.room.users) {
+      action(user);
+    }
   }
 
   ngOnDestroy(): void {

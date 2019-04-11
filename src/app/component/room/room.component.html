@@ -55,4 +55,8 @@
       <button class="btn btn-primary" (click)="showVotes(true)">Show Votes</button>
     </div>
   </div>
+  <hr>
+  <ul class="list-group" *ngFor="let story of room.stories">
+    <li class="list-group-item">{{story.storyName}}</li>
+  </ul>
 </div>
