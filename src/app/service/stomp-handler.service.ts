@@ -13,7 +13,7 @@ export class StompHandlerService {
   private stompClient: any;
 
   initializeWebSocketConnection(room: Room, user: User, setRoom: any) {
-    const ws = new SockJS('http://localhost:9999/websocket');
+    const ws = new SockJS('http://api.alejand.com/websocket');
     this.stompClient = Stomp.over(ws);
     this.stompClient.connect({}, () => {
       this.connectionSuccess(room, user, setRoom);

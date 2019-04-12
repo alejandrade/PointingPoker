@@ -3,7 +3,7 @@ env:
   variables:
     CACHE_CONTROL: "86400"
     S3_BUCKET: "pointing.alejand.com"
-    BUILD_FOLDER: "dist"
+    BUILD_FOLDER: "dist/PointingPoker"
     BUILD_ENV: "prod"
 phases:
   install:
