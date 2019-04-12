@@ -2,8 +2,8 @@ version: 0.2
 env:
   variables:
     CACHE_CONTROL: "86400"
-    S3_BUCKET: pointing.alejand.com
-    BUILD_FOLDER: /
+    S3_BUCKET: "pointing.alejand.com"
+    BUILD_FOLDER: "dist"
     BUILD_ENV: "prod"
 phases:
   install:
