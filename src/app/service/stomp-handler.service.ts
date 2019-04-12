@@ -3,6 +3,7 @@ import * as SockJS from 'sockjs-client';
 import * as Stomp from 'stompjs';
 import {Room} from '../model/room';
 import {WebSocketChatMessage} from '../model/webSocketChatMessage';
+import {User} from '../model/user';
 
 
 @Injectable({
@@ -11,7 +12,7 @@ import {WebSocketChatMessage} from '../model/webSocketChatMessage';
 export class StompHandlerService {
   private stompClient: any;
 
-  initializeWebSocketConnection(room: Room, user: string, setRoom: any) {
+  initializeWebSocketConnection(room: Room, user: User, setRoom: any) {
     const ws = new SockJS('http://localhost:9999/websocket');
     this.stompClient = Stomp.over(ws);
     this.stompClient.connect({}, () => {
@@ -19,7 +20,7 @@ export class StompHandlerService {
     });
   }
 
-  publish(room: Room, user: string) {
+  publish(room: Room, user: User) {
     if (this.stompClient) {
       const chatMessage = {
         sender : user,
@@ -31,8 +32,12 @@ export class StompHandlerService {
     }
   }
 
+  disconnect(): void{
+    this.stompClient.disconnect();
+  }
 
-  private connectionSuccess(room: Room, user: string, setRoom: any) {
+
+  private connectionSuccess(room: Room, user: User, setRoom: any) {
       this.stompClient.subscribe(`/topic/room/${room.id}`, (payload: any) => this.onMessageReceived(payload, setRoom));
       this.stompClient.send(`/app/chat/${room.id}/addUser`, {}, JSON.stringify({
         sender: user,

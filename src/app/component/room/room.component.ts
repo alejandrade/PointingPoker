@@ -1,12 +1,10 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {Room} from '../../model/room';
 import {User} from '../../model/user';
-import {falseIfMissing} from 'protractor/built/util';
 import {Story} from '../../model/story';
 import {StompHandlerService} from '../../service/stomp-handler.service';
 import {WebSocketChatMessage} from '../../model/webSocketChatMessage';
-import {bsDatepickerReducer} from 'ngx-bootstrap/datepicker/reducer/bs-datepicker.reducer';
 
 @Component({
   selector: 'app-room',
@@ -16,25 +14,49 @@ import {bsDatepickerReducer} from 'ngx-bootstrap/datepicker/reducer/bs-datepicke
 export class RoomComponent implements OnInit, OnDestroy {
 
   room: Room;
-  story: Story;
   currentUser: User;
 
   private sub: any;
-  constructor(private route: ActivatedRoute, private stompHandler: StompHandlerService) { }
+  constructor(private route: ActivatedRoute, private stompHandler: StompHandlerService, private router: Router) { }
 
   ngOnInit() {
     this.sub = this.route.params.subscribe((param) => {
       this.room = new Room();
       this.currentUser = new User();
+      this.room.currentStory = new Story();
       this.currentUser.name = param.userName;
+      this.currentUser.id = this.generateUniqueId();
       this.room.id = param.roomId;
-      this.stompHandler.initializeWebSocketConnection(this.room, this.currentUser.name, (webSocker: WebSocketChatMessage) =>
-      {
-        this.room = webSocker.room;
-      });
+      this.stompHandler
+        .initializeWebSocketConnection(this.room, this.currentUser, (webSocker: WebSocketChatMessage) => this.updateRoom(webSocker.room));
     });
 
   }
+
+  private updateRoom(room: Room): void {
+    this.room = room;
+    this.checkIfAllUsersVotes(this.room.users);
+    this.checkIfImConnected();
+  }
+
+  private checkIfImConnected(): void {
+    if (!this.room.users.find(u => u.id === this.currentUser.id)) {
+      this.stompHandler.disconnect();
+      alert('You have been disconnected!');
+      this.router.navigate(['/']);
+    }
+  }
+
+  private checkIfAllUsersVotes(users: Array<User>): void {
+    if (users != null) {
+      const everyUserVoted = users.every((user) => !!user.vote);
+
+      if (everyUserVoted && !this.room.showVotes) {
+        this.showVotes(true);
+      }
+    }
+  }
+
 
   vote(num: number) {
     this.currentUser.vote = num;
@@ -48,11 +70,10 @@ export class RoomComponent implements OnInit, OnDestroy {
       }
     });
 
-    const currentStory = this.room.currentStory || new Story();
-    currentStory.score = avergageVote;
-    this.room.currentStory = currentStory;;
+    avergageVote *=  this.room.users.length;
+    this.room.currentStory.score = avergageVote;
 
-    this.stompHandler.publish(this.room, this.currentUser.name);
+    this.publish();
   }
 
   showVotes(show: boolean) {
@@ -62,28 +83,32 @@ export class RoomComponent implements OnInit, OnDestroy {
         this.room.showVotes = show;
       }
     });
-    this.stompHandler.publish(this.room, this.currentUser.name);
+    this.publish();
   }
 
   clearVotes() {
+
     this.synchronizeIterate((user) => {
       delete user.vote;
       this.showVotes(false);
     });
-    const story = this.room.currentStory;
-    if (!story.storyName) {
-      story.storyName = Math.random().toString(36).substr(2, 9);
+
+    if (!this.room.currentStory.id) {
+      this.room.currentStory.id = this.generateUniqueId();
     }
 
-    this.room.stories.push(story);
-    delete this.room.currentStory;
+    if (!this.room.currentStory.storyName) {
+      this.room.currentStory.storyName = this.generateUniqueId();
+    }
 
-    this.stompHandler.publish(this.room, this.currentUser.name);
-  }
+    if (this.room.stories == null) {
+      this.room.stories = [];
+    }
 
-  getStory(): Story {
-    const currentStory = this.room.currentStory;
-    return currentStory == null ? new Story() : currentStory;
+    this.room.stories.push(this.room.currentStory);
+    this.room.currentStory = new Story();
+
+    this.publish();
   }
 
   synchronizeIterate(action: (user: User) => void) {
@@ -92,8 +117,35 @@ export class RoomComponent implements OnInit, OnDestroy {
     }
   }
 
+  onKeySetStoryName(event): void {
+    this.room.currentStory.storyName = event.target.value;
+    this.publish();
+  }
+
   ngOnDestroy(): void {
     this.sub.unsubscribe();
   }
 
+  generateUniqueId(): string {
+    return Math.random().toString(36).substr(2, 9);
+  }
+
+  deleteStory(id: string) {
+    this.room.stories = this.room.stories.filter((str) => str.id !== id);
+    this.publish();
+  }
+
+  getUrl(): string{
+    return window.location.origin;
+  }
+
+  private publish(): void{
+    this.stompHandler.publish(this.room, this.currentUser);
+
+  }
+
+  kickUser(id: string) {
+    this.room.users = this.room.users.filter((u) => u.id !== id);
+    this.publish();
+  }
 }

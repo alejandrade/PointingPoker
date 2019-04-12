@@ -9,10 +9,6 @@
     <label for="roomNumber">Room Number</label>
     <input type="text" class="form-control form-control-lg rounded-0" id="roomNumber" name="roomNumber" [(ngModel)]="room.id" >
   </div>
-  <div>
-    <input type="checkbox" id="remember" name="remember">
-    <label for="remember">&nbsp; Remember me on this computer</label>
-  </div>
   <button (click)="goToRoom()" [disabled]="!user.name"  class="btn btn-primary btn-lg float-right" id="btnLogin">{{!room.id ? 'Create Room' : 'Join Room'}}</button>
 </form>
 

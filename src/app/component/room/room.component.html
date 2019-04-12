@@ -1,13 +1,14 @@
 <div class="">
   <div class="card">
-    <div class="card-header">{{room.id}}</div>
+    <div class="card-header"><input class="form-control-plaintext" readonly type="text" value="{{getUrl() + '?roomId=' + room.id}}"
+                                    tooltip="Copy + Paste to invite"></div>
     <div class="card-body">
       <div class="row">
         <div class="col-5">
-          <input type="text" class="form-control" placeholder="Story" name="storyName" id="storyName" [ngModel]="getStory().storyName"/>
+          <input type="text" class="form-control" placeholder="Story" name="storyName" id="storyName" [(ngModel)]="room.currentStory.storyName" (keyup)="onKeySetStoryName($event)"/>
         </div>
         <div class="col-6">
-          <span *ngIf="room.showVotes">{{getStory().score}}</span>
+          <span *ngIf="room.showVotes">{{room.currentStory.score}}</span>
           <span *ngIf="!room.showVotes">?</span>
         </div>
       </div>
@@ -16,6 +17,8 @@
         <tr>
           <th scope="col">User</th>
           <th scope="col">Vote</th>
+          <th scope="col">Action</th>
+
         </tr>
         </thead>
         <tbody>
@@ -24,6 +27,9 @@
           <td>
             <span *ngIf="room.showVotes">{{user.vote}}</span>
             <span *ngIf="!room.showVotes">?</span>
+          </td>
+          <td>
+            <button class="btn btn-danger btn-sm" (click)="kickUser(user.id)">Kick</button>
           </td>
         </tr>
         </tbody>
@@ -57,6 +63,6 @@
   </div>
   <hr>
   <ul class="list-group" *ngFor="let story of room.stories">
-    <li class="list-group-item">{{story.storyName}}</li>
+    <li class="list-group-item">{{story.storyName}} - {{story.score || 0}} - <button (click)="deleteStory(story.id)" class="btn btn-sm btn-danger"> delete </button></li>
   </ul>
 </div>
