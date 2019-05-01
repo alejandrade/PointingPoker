@@ -23,7 +23,9 @@
         </thead>
         <tbody>
         <tr *ngFor="let user of room.users">
-          <td>{{user.name}}</td>
+          <td *ngIf="!user.spectator" [ngClass]="user.vote ? 'text-success' : ''">{{user.name}}</td>
+          <td *ngIf="user.spectator" class="text-info">{{user.name}}</td>
+
           <td>
             <span *ngIf="room.showVotes">{{user.vote}}</span>
             <span *ngIf="!room.showVotes">?</span>
@@ -38,13 +40,17 @@
   </div>
   <br>
   <div class="row">
-    <div class="btn-group contentCenter" role="group" aria-label="Basic example">
+    <div class="btn-group contentCenter" *ngIf="!currentUser.spectator" role="group" aria-label="Basic example" style="padding-bottom: 3px;">
       <button class="btn btn-info" (click)="vote(0)">0</button>
       <button class="btn btn-info" (click)="vote(.5)">1/2</button>
       <button class="btn btn-info" (click)="vote(1)">1</button>
       <button class="btn btn-info" (click)="vote(2)">2</button>
       <button class="btn btn-info" (click)="vote(3)">3</button>
       <button class="btn btn-info" (click)="vote(5)">5</button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="btn-group contentCenter" *ngIf="!currentUser.spectator" role="group" aria-label="Basic example">
       <button class="btn btn-info" (click)="vote(8)">8</button>
       <button class="btn btn-info" (click)="vote(13)">13</button>
       <button class="btn btn-info" (click)="vote(20)">20</button>
@@ -54,10 +60,16 @@
   </div>
   <hr>
   <div class="row contentCenter">
-    <div class="col-6">
+    <div class=col-4>
+      <div class="form-check form-check-inline">
+        <button class="btn" [ngClass]="currentUser.spectator ? 'btn-secondary' : 'btn-primary'" (click)="updateSpectator()">Spectator</button>
+      </div>
+    </div>
+
+    <div class="col-4">
       <button class="btn btn-primary" (click)="clearVotes()">Clear Votes</button>
     </div>
-    <div class="col-6">
+    <div class="col-4">
       <button class="btn btn-primary" (click)="showVotes(true)">Show Votes</button>
     </div>
   </div>

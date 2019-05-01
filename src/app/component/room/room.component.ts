@@ -49,7 +49,7 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   private checkIfAllUsersVotes(users: Array<User>): void {
     if (users != null) {
-      const everyUserVoted = users.every((user) => !!user.vote);
+      const everyUserVoted = users.every((user) => !!user.vote || user.spectator);
 
       if (everyUserVoted && !this.room.showVotes) {
         this.showVotes(true);
@@ -62,7 +62,7 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.currentUser.vote = num;
     let avergageVote = 0;
     this.synchronizeIterate((user) => {
-      if (this.currentUser.name === user.name) {
+      if (this.currentUser.id === user.id) {
         user.vote = num;
       }
       if (user.vote) {
@@ -76,10 +76,20 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.publish();
   }
 
+  updateSpectator(): void {
+    this.currentUser.spectator = !this.currentUser.spectator;
+    this.synchronizeIterate((user) => {
+      if (this.currentUser.id === user.id) {
+        user.spectator = this.currentUser.spectator;
+      }
+    });
+    this.publish();
+  }
+
   showVotes(show: boolean) {
     this.room.showVotes = show;
     this.synchronizeIterate((user) => {
-      if (this.currentUser.name === user.name) {
+      if (this.currentUser.id === user.id) {
         this.room.showVotes = show;
       }
     });
