@@ -9,8 +9,7 @@ import { CookieService } from 'ngx-cookie-service';
   templateUrl: './login-form.component.html',
   styleUrls: ['./login-form.component.css']
 })
-export class LoginFormComponent implements OnInit
-{
+export class LoginFormComponent implements OnInit {
   private cookieName = 'userNameCook';
   user = new User();
   room = new Room();
@@ -29,7 +28,7 @@ export class LoginFormComponent implements OnInit
   goToRoom() {
     const roomId = this.room.id ? this.room.id : Math.random().toString(36).substr(2, 9);
     this.cookie.set(this.cookieName, this.user.name);
-    this.router.navigate(['/room', roomId, this.user.name]);
+    this.router.navigate(['/room', roomId]);
   }
 
 }

@@ -5,6 +5,7 @@ import {User} from '../../model/user';
 import {Story} from '../../model/story';
 import {StompHandlerService} from '../../service/stomp-handler.service';
 import {WebSocketChatMessage} from '../../model/webSocketChatMessage';
+import {CookieService} from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-room',
@@ -16,21 +17,27 @@ export class RoomComponent implements OnInit, OnDestroy {
   room: Room;
   currentUser: User;
 
+  private cookieName = 'userNameCook';
   private sub: any;
-  constructor(private route: ActivatedRoute, private stompHandler: StompHandlerService, private router: Router) { }
+
+  constructor(private route: ActivatedRoute,
+              private stompHandler: StompHandlerService,
+              private router: Router,
+              private cookie: CookieService) { }
 
   ngOnInit() {
     this.sub = this.route.params.subscribe((param) => {
       this.room = new Room();
       this.currentUser = new User();
       this.room.currentStory = new Story();
-      this.currentUser.name = param.userName;
+      this.currentUser.name = this.cookie.get(this.cookieName) || this.generateUniqueId();
       this.currentUser.id = this.generateUniqueId();
       this.room.id = param.roomId;
+      this.room.users = [];
+      this.room.users.push(this.currentUser);
       this.stompHandler
-        .initializeWebSocketConnection(this.room, this.currentUser, (webSocker: WebSocketChatMessage) => this.updateRoom(webSocker.room));
+        .initializeWebSocketConnection(this.room, this.currentUser, ( webSocket: WebSocketChatMessage) => this.updateRoom(webSocket.room));
     });
-
   }
 
   private updateRoom(room: Room): void {
@@ -132,6 +139,20 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.publish();
   }
 
+  onKeyChangeUsername(event): void {
+    this.currentUser.name = event.target.value;
+    this.synchronizeIterate((user) => {
+      if (this.currentUser.id === user.id) {
+        user.name = this.currentUser.name;
+      }
+    });
+    this.publish();
+  }
+
+  sync(): void {
+    this.publish();
+  }
+
   ngOnDestroy(): void {
     this.sub.unsubscribe();
   }
@@ -145,11 +166,11 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.publish();
   }
 
-  getUrl(): string{
+  getUrl(): string {
     return window.location.origin;
   }
 
-  private publish(): void{
+  private publish(): void {
     this.stompHandler.publish(this.room, this.currentUser);
 
   }

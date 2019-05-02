@@ -9,7 +9,7 @@ const routes: Routes = [
     component: LoginFormComponent
   },
   {
-    path: 'room/:roomId/:userName',
+    path: 'room/:roomId',
     component: RoomComponent
   }
 ];
