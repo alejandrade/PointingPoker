@@ -60,18 +60,15 @@
   </div>
   <hr>
   <div class="row contentCenter">
-    <div class=col-3>
+    <div class=col-4>
       <div class="form-check form-check-inline">
         <button class="btn" [ngClass]="currentUser.spectator ? 'btn-secondary' : 'btn-primary'" (click)="updateSpectator()">Spectator</button>
       </div>
     </div>
-    <div class="col-3">
-      <button class="btn btn-primary" (click)="sync()">Refresh UI</button>
-    </div>
-    <div class="col-3">
+    <div class="col-4">
       <button class="btn btn-primary" (click)="clearVotes()">Clear Votes</button>
     </div>
-    <div class="col-3">
+    <div class="col-4">
       <button class="btn btn-primary" (click)="showVotes(true)">Show Votes</button>
     </div>
   </div>

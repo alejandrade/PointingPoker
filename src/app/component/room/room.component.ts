@@ -38,6 +38,8 @@ export class RoomComponent implements OnInit, OnDestroy {
       this.stompHandler
         .initializeWebSocketConnection(this.room, this.currentUser, ( webSocket: WebSocketChatMessage) => this.updateRoom(webSocket.room));
     });
+
+    setInterval(() => this.sync(), 3000);
   }
 
   private updateRoom(room: Room): void {
@@ -150,7 +152,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   sync(): void {
-    this.publish();
+    this.stompHandler.sync(this.room, this.currentUser);
   }
 
   ngOnDestroy(): void {

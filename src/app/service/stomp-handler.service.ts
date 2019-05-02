@@ -34,6 +34,17 @@ export class StompHandlerService {
     }
   }
 
+  sync(room: Room, user: User) {
+    if (this.stompClient) {
+      const chatMessage = {
+        sender : user,
+        type : 'SYNC'
+      };
+      this.stompClient.send(`/app/chat/${room.id}/sync`, {}, JSON
+        .stringify(chatMessage));
+    }
+  }
+
   disconnect(): void{
     this.stompClient.disconnect();
   }
