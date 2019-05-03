@@ -23,10 +23,9 @@
               "src/assets"
             ],
             "styles": [
-              "./node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "src/assets/bootstrap-color.min.css",
               "./node_modules/ngx-bootstrap/datepicker/bs-datepicker.css",
-              "src/styles.css",
-              "src/assets/bootstrap-color.min.css"
+              "src/styles.css"
             ],
             "scripts": [],
             "es5BrowserSupport": true
