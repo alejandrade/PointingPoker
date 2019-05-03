@@ -63,8 +63,10 @@ export class RoomComponent implements OnInit, OnDestroy {
   vote(num: number) {
     this.currentUser.vote = num;
     let avergageVote = 0;
+    let noChange = false;
     this.synchronizeIterate((user) => {
       if (this.currentUser.id === user.id) {
+        noChange = (user.vote === num);
         user.vote = num;
       }
       if (user.vote) {
@@ -75,7 +77,9 @@ export class RoomComponent implements OnInit, OnDestroy {
     avergageVote = avergageVote / this.room.users.length;
     this.room.currentStory.score = avergageVote;
 
-    this.publish();
+    if (!noChange) {
+      this.publish();
+    }
   }
 
   reachedConsensus(): boolean {
@@ -94,16 +98,16 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   showVotes(show: boolean) {
-    this.room.showVotes = show;
-    this.synchronizeIterate((user) => {
-      if (this.currentUser.id === user.id) {
-        this.room.showVotes = show;
-      }
-    });
-    this.publish();
+    const noChange = this.room.showVotes === show;
+    if (!noChange) {
+      this.room.showVotes = show;
+      this.publish();
+    }
+
   }
 
   clearVotes() {
+    this.room.currentStory.consensus = this.reachedConsensus();
 
     this.synchronizeIterate((user) => {
       delete user.vote;
@@ -117,7 +121,6 @@ export class RoomComponent implements OnInit, OnDestroy {
     if (!this.room.currentStory.storyName) {
       this.room.currentStory.storyName = this.generateUniqueId();
     }
-    this.room.currentStory.consensus = this.reachedConsensus();
     this.room.stories.push(this.room.currentStory);
     this.room.currentStory = new Story(this.generateUniqueId());
 
