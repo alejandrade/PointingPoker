@@ -11,7 +11,11 @@
       </div>
       <div class="row">
         <div class="col-12 d-flex justify-content-center">
-          <h1 class="text-success" *ngIf="room.showVotes">{{room.currentStory.score}}</h1>
+          <h2 [ngClass]="reachedConsensus() ? 'text-success' : 'text-danger'" *ngIf="room.showVotes">
+            {{room.currentStory.score}}
+            <span *ngIf="!reachedConsensus()" >(no consensus)</span>
+            <span *ngIf="reachedConsensus()" >(consensus)</span>
+          </h2>
           <h1 class="text-muted" *ngIf="!room.showVotes">?</h1>
         </div>
       </div>
@@ -44,20 +48,13 @@
     <div class="row">
       <div class="btn-group contentCenter" *ngIf="!currentUser.spectator" role="group" aria-label="Basic example" style="padding-bottom: 3px;">
         <button class="btn btn-info" (click)="vote(0)">0</button>
-        <button class="btn btn-info" (click)="vote(.5)">1/2</button>
         <button class="btn btn-info" (click)="vote(1)">1</button>
         <button class="btn btn-info" (click)="vote(2)">2</button>
         <button class="btn btn-info" (click)="vote(3)">3</button>
         <button class="btn btn-info" (click)="vote(5)">5</button>
-      </div>
-    </div>
-    <div class="row">
-      <div class="btn-group contentCenter" *ngIf="!currentUser.spectator" role="group" aria-label="Basic example">
         <button class="btn btn-info" (click)="vote(8)">8</button>
         <button class="btn btn-info" (click)="vote(13)">13</button>
         <button class="btn btn-info" (click)="vote(20)">20</button>
-        <button class="btn btn-info" (click)="vote(40)">40</button>
-        <button class="btn btn-info" (click)="vote(100)">100</button>
       </div>
     </div>
     <hr>
@@ -72,7 +69,13 @@
     </div>
     <hr>
     <ul class="list-group" *ngFor="let story of room.stories">
-      <li class="list-group-item">{{story.storyName}} - {{story.score || 0}} - <button (click)="deleteStory(story.id)" class="btn btn-sm btn-danger"> delete </button></li>
+      <li class="list-group-item" [ngClass]="story.consensus ? 'text-success' : 'text-danger'">
+        {{story.storyName}} - {{story.score || 0}}
+        <span *ngIf="!story.consensus" >(no consensus)</span>
+        <span *ngIf="story.consensus" >(consensus)</span>
+        -
+        <button (click)="deleteStory(story.id)" class="btn btn-sm btn-danger"> delete </button>
+      </li>
     </ul>
   </div>
 

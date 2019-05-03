@@ -33,8 +33,6 @@ export class RoomComponent implements OnInit, OnDestroy {
       this.stompHandler
         .initializeWebSocketConnection(this.room, this.currentUser, ( webSocket: WebSocketChatMessage) => this.updateRoom(webSocket.room));
     });
-
-    setInterval(() => this.sync(), 3000);
   }
 
   private updateRoom(room: Room): void {
@@ -80,6 +78,11 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.publish();
   }
 
+  reachedConsensus(): boolean {
+    const userVotes = this.room.users.map((user) => user.vote);
+    return userVotes.every(vote => vote === userVotes[0]);
+  }
+
   updateSpectator(): void {
     this.currentUser.spectator = !this.currentUser.spectator;
     this.synchronizeIterate((user) => {
@@ -114,7 +117,7 @@ export class RoomComponent implements OnInit, OnDestroy {
     if (!this.room.currentStory.storyName) {
       this.room.currentStory.storyName = this.generateUniqueId();
     }
-
+    this.room.currentStory.consensus = this.reachedConsensus();
     this.room.stories.push(this.room.currentStory);
     this.room.currentStory = new Story(this.generateUniqueId());
 
@@ -140,10 +143,6 @@ export class RoomComponent implements OnInit, OnDestroy {
       }
     });
     this.publish();
-  }
-
-  sync(): void {
-    //this.stompHandler.sync(this.room, this.currentUser);
   }
 
   ngOnDestroy(): void {

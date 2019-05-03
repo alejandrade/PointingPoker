@@ -6,7 +6,7 @@ export class User {
 
 
   constructor(id?: string, name?: string) {
-    this.name = name || 'New User ' + this.id;
+    this.name = name || '';
     this.id = id;
     this.spectator = false;
   }
