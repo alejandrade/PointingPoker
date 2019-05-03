@@ -158,10 +158,6 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.publish();
   }
 
-  getUrl(): string {
-    return window.location.origin;
-  }
-
   private publish(): void {
     this.stompHandler.publish(this.room, this.currentUser);
 
