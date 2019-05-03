@@ -1,7 +1,8 @@
 <div class="">
   <div class="card">
-    <div class="card-header">
-      <input class="form-control form-control-lg rounded-0" placeholder="Username" type="text" (keyup)="onKeyChangeUsername($event)" [(ngModel)]="currentUser.name"></div>
+    <div class="card-body">
+      <input class="form-control form-control-lg rounded-0" placeholder="Username" type="text" (keyup)="onKeyChangeUsername($event)" [(ngModel)]="currentUser.name">
+    </div>
     <div class="card-body">
       <div class="row">
         <div class="col-12">
@@ -11,7 +12,7 @@
       <div class="row">
         <div class="col-12 d-flex justify-content-center">
           <h1 class="text-success" *ngIf="room.showVotes">{{room.currentStory.score}}</h1>
-          <h1 class="text-secondary" *ngIf="!room.showVotes">?</h1>
+          <h1 class="text-muted" *ngIf="!room.showVotes">?</h1>
         </div>
       </div>
       <table class="table table-sm">
@@ -24,11 +25,11 @@
         </thead>
         <tbody>
         <tr *ngFor="let user of room.users">
-          <td *ngIf="!user.spectator" [ngClass]="user.vote ? 'text-success' : ''">{{user.name}}</td>
+          <td *ngIf="!user.spectator" [ngClass]="user.vote ? 'text-success' : 'text-muted'">{{user.name}}</td>
           <td *ngIf="user.spectator" class="text-info">{{user.name}}</td>
           <td>
-            <span *ngIf="room.showVotes">{{user.vote}}</span>
-            <span *ngIf="!room.showVotes">?</span>
+            <span class="text-success" *ngIf="room.showVotes">{{user.vote}}</span>
+            <span class="text-muted" *ngIf="!room.showVotes">?</span>
           </td>
           <td>
             <button class="btn btn-danger btn-sm" (click)="kickUser(user.id)">Kick</button>
@@ -39,37 +40,40 @@
     </div>
   </div>
   <br>
-  <div class="row">
-    <div class="btn-group contentCenter" *ngIf="!currentUser.spectator" role="group" aria-label="Basic example" style="padding-bottom: 3px;">
-      <button class="btn btn-info" (click)="vote(0)">0</button>
-      <button class="btn btn-info" (click)="vote(.5)">1/2</button>
-      <button class="btn btn-info" (click)="vote(1)">1</button>
-      <button class="btn btn-info" (click)="vote(2)">2</button>
-      <button class="btn btn-info" (click)="vote(3)">3</button>
-      <button class="btn btn-info" (click)="vote(5)">5</button>
-    </div>
-  </div>
-  <div class="row">
-    <div class="btn-group contentCenter" *ngIf="!currentUser.spectator" role="group" aria-label="Basic example">
-      <button class="btn btn-info" (click)="vote(8)">8</button>
-      <button class="btn btn-info" (click)="vote(13)">13</button>
-      <button class="btn btn-info" (click)="vote(20)">20</button>
-      <button class="btn btn-info" (click)="vote(40)">40</button>
-      <button class="btn btn-info" (click)="vote(100)">100</button>
-    </div>
-  </div>
-  <hr>
-  <div class="row contentCenter">
-    <div class=col-12>
-      <div class="btn-group">
-        <button class="btn" [ngClass]="currentUser.spectator ? 'btn-secondary' : 'btn-primary'" (click)="updateSpectator()">Spectator</button>
-        <button class="btn btn-primary" (click)="clearVotes()">Clear</button>
-        <button class="btn btn-primary" (click)="showVotes(true)">Show</button>
+  <div class="card-body">
+    <div class="row">
+      <div class="btn-group contentCenter" *ngIf="!currentUser.spectator" role="group" aria-label="Basic example" style="padding-bottom: 3px;">
+        <button class="btn btn-info" (click)="vote(0)">0</button>
+        <button class="btn btn-info" (click)="vote(.5)">1/2</button>
+        <button class="btn btn-info" (click)="vote(1)">1</button>
+        <button class="btn btn-info" (click)="vote(2)">2</button>
+        <button class="btn btn-info" (click)="vote(3)">3</button>
+        <button class="btn btn-info" (click)="vote(5)">5</button>
       </div>
     </div>
+    <div class="row">
+      <div class="btn-group contentCenter" *ngIf="!currentUser.spectator" role="group" aria-label="Basic example">
+        <button class="btn btn-info" (click)="vote(8)">8</button>
+        <button class="btn btn-info" (click)="vote(13)">13</button>
+        <button class="btn btn-info" (click)="vote(20)">20</button>
+        <button class="btn btn-info" (click)="vote(40)">40</button>
+        <button class="btn btn-info" (click)="vote(100)">100</button>
+      </div>
+    </div>
+    <hr>
+    <div class="row contentCenter">
+      <div class=col-12>
+        <div class="btn-group">
+          <button class="btn" [ngClass]="currentUser.spectator ? 'btn-outline-primary' : 'btn-primary'" (click)="updateSpectator()">Spectator</button>
+          <button class="btn btn-primary" (click)="clearVotes()">Clear</button>
+          <button class="btn btn-primary" (click)="showVotes(true)">Show</button>
+        </div>
+      </div>
+    </div>
+    <hr>
+    <ul class="list-group" *ngFor="let story of room.stories">
+      <li class="list-group-item">{{story.storyName}} - {{story.score || 0}} - <button (click)="deleteStory(story.id)" class="btn btn-sm btn-danger"> delete </button></li>
+    </ul>
   </div>
-  <hr>
-  <ul class="list-group" *ngFor="let story of room.stories">
-    <li class="list-group-item">{{story.storyName}} - {{story.score || 0}} - <button (click)="deleteStory(story.id)" class="btn btn-sm btn-danger"> delete </button></li>
-  </ul>
+
 </div>
