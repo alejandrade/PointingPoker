@@ -9,19 +9,23 @@ import { RoomComponent } from './component/room/room.component';
 import { ButtonsModule } from 'ngx-bootstrap/buttons';
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
 import { CookieService } from 'ngx-cookie-service';
+import {BsDropdownModule} from 'ngx-bootstrap';
+import { OcticonDirective } from './directives/octicon.directive';
 
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginFormComponent,
-    RoomComponent
+    RoomComponent,
+    OcticonDirective
   ],
   imports: [
     BrowserModule,
     ButtonsModule.forRoot(),
     FormsModule,
     TooltipModule.forRoot(),
+    BsDropdownModule.forRoot(),
     PointingPokerRoutingModule
   ],
   providers: [CookieService],

@@ -27,13 +27,8 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.sub = this.route.params.subscribe((param) => {
-      this.room = new Room();
-      this.currentUser = new User();
-      this.room.currentStory = new Story();
-      this.currentUser.name = this.cookie.get(this.cookieName) || this.generateUniqueId();
-      this.currentUser.id = this.generateUniqueId();
-      this.room.id = param.roomId;
-      this.room.users = [];
+      this.room = new Room(param.roomId, new Story(this.generateUniqueId()));
+      this.currentUser = new User(this.generateUniqueId(), this.cookie.get(this.cookieName));
       this.room.users.push(this.currentUser);
       this.stompHandler
         .initializeWebSocketConnection(this.room, this.currentUser, ( webSocket: WebSocketChatMessage) => this.updateRoom(webSocket.room));
@@ -44,7 +39,7 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   private updateRoom(room: Room): void {
     this.room = room;
-    this.checkIfAllUsersVotes(this.room.users);
+    this.checkIfAllUsersVotes(room.users);
     this.checkIfImConnected();
   }
 
@@ -120,12 +115,8 @@ export class RoomComponent implements OnInit, OnDestroy {
       this.room.currentStory.storyName = this.generateUniqueId();
     }
 
-    if (this.room.stories == null) {
-      this.room.stories = [];
-    }
-
     this.room.stories.push(this.room.currentStory);
-    this.room.currentStory = new Story();
+    this.room.currentStory = new Story(this.generateUniqueId());
 
     this.publish();
   }
