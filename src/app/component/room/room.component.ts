@@ -74,7 +74,7 @@ export class RoomComponent implements OnInit, OnDestroy {
       }
     });
 
-    avergageVote *=  this.room.users.length;
+    avergageVote = avergageVote / this.room.users.length;
     this.room.currentStory.score = avergageVote;
 
     this.publish();
@@ -143,7 +143,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   sync(): void {
-    this.stompHandler.sync(this.room, this.currentUser);
+    //this.stompHandler.sync(this.room, this.currentUser);
   }
 
   ngOnDestroy(): void {
