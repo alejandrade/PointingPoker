@@ -24,10 +24,12 @@ export class RoomComponent implements OnInit, OnDestroy {
   public keyUpStoryNameSubject = new Subject<KeyboardEvent>();
   public keyUpUsernameSubject = new Subject<KeyboardEvent>();
 
+  private publishSubject = new Subject();
   private cookieName = 'userNameCook';
   private paramSubscribe: Subscription;
   private keyUpStoryNameSubcripton: Subscription;
   private keyUpUsernameSubscription: Subscription;
+  private publishSubscription: Subscription;
 
   constructor(private route: ActivatedRoute,
               private stompHandler: StompHandlerService,
@@ -37,10 +39,16 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.environmentInit();
-    this.keyUpStoryNameSubcripton = this.createDebounce(this.keyUpStoryNameSubject)
+
+    this.keyUpStoryNameSubcripton = this.createDebounceForKeyboardEvent(this.keyUpStoryNameSubject)
       .subscribe((storyName) => this.updateStoryName(storyName));
-    this.keyUpUsernameSubscription = this.createDebounce(this.keyUpUsernameSubject)
+
+    this.keyUpUsernameSubscription = this.createDebounceForKeyboardEvent(this.keyUpUsernameSubject)
       .subscribe((username) => this.updateUsername(username));
+
+    this.publishSubscription = this.publishSubject.pipe(
+      debounceTime(200)
+    ).subscribe(() => this.stompHandler.publish(this.room, this.currentUser));
   }
 
   vote(num: number) {
@@ -120,6 +128,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.paramSubscribe.unsubscribe();
     this.keyUpStoryNameSubcripton.unsubscribe();
+    this.publishSubscription.unsubscribe();
   }
 
   generateUniqueId(): string {
@@ -151,7 +160,7 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.publish();
   }
 
-  private createDebounce(sub: Subject<KeyboardEvent>): any {
+  private createDebounceForKeyboardEvent(sub: Subject<any>): any {
     return sub.pipe(
       map(event => (event.target as any).value),
       debounceTime(500),
@@ -197,7 +206,6 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   private publish(): void {
-    this.stompHandler.publish(this.room, this.currentUser);
-
+    this.publishSubject.next();
   }
 }
