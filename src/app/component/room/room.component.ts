@@ -6,6 +6,11 @@ import {Story} from '../../model/story';
 import {StompHandlerService} from '../../service/stomp-handler.service';
 import {WebSocketChatMessage} from '../../model/webSocketChatMessage';
 import {CookieService} from 'ngx-cookie-service';
+import {Subject, Subscription} from 'rxjs';
+import {debounceTime, delay, map} from 'rxjs/operators';
+import {distinctUntilChanged} from 'rxjs/internal/operators/distinctUntilChanged';
+import {mergeMap} from 'rxjs/internal/operators/mergeMap';
+import {of} from 'rxjs/internal/observable/of';
 
 @Component({
   selector: 'app-room',
@@ -16,49 +21,27 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   room: Room;
   currentUser: User;
+  public keyUpStoryNameSubject = new Subject<KeyboardEvent>();
+  public keyUpUsernameSubject = new Subject<KeyboardEvent>();
 
   private cookieName = 'userNameCook';
-  private sub: any;
+  private paramSubscribe: Subscription;
+  private keyUpStoryNameSubcripton: Subscription;
+  private keyUpUsernameSubscription: Subscription;
 
   constructor(private route: ActivatedRoute,
               private stompHandler: StompHandlerService,
               private router: Router,
-              private cookie: CookieService) { }
+              private cookie: CookieService) {
+  }
 
   ngOnInit() {
-    this.sub = this.route.params.subscribe((param) => {
-      this.room = new Room(param.roomId, new Story(this.generateUniqueId()));
-      this.currentUser = new User(this.generateUniqueId(), this.cookie.get(this.cookieName));
-      this.room.users.push(this.currentUser);
-      this.stompHandler
-        .initializeWebSocketConnection(this.room, this.currentUser, ( webSocket: WebSocketChatMessage) => this.updateRoom(webSocket.room));
-    });
+    this.environmentInit();
+    this.keyUpStoryNameSubcripton = this.createDebounce(this.keyUpStoryNameSubject)
+      .subscribe((storyName) => this.updateStoryName(storyName));
+    this.keyUpUsernameSubscription = this.createDebounce(this.keyUpUsernameSubject)
+      .subscribe((username) => this.updateUsername(username));
   }
-
-  private updateRoom(room: Room): void {
-    this.room = room;
-    this.checkIfAllUsersVotes(room.users);
-    this.checkIfImConnected();
-  }
-
-  private checkIfImConnected(): void {
-    if (!this.room.users.find(u => u.id === this.currentUser.id)) {
-      this.stompHandler.disconnect();
-      alert('You have been disconnected!');
-      this.router.navigate(['/']);
-    }
-  }
-
-  private checkIfAllUsersVotes(users: Array<User>): void {
-    if (users != null) {
-      const everyUserVoted = users.every((user) => !!user.vote || user.spectator);
-
-      if (everyUserVoted && !this.room.showVotes) {
-        this.showVotes(true);
-      }
-    }
-  }
-
 
   vote(num: number) {
     this.currentUser.vote = num;
@@ -133,23 +116,10 @@ export class RoomComponent implements OnInit, OnDestroy {
     }
   }
 
-  onKeySetStoryName(event): void {
-    this.room.currentStory.storyName = event.target.value;
-    this.publish();
-  }
-
-  onKeyChangeUsername(event): void {
-    this.currentUser.name = event.target.value;
-    this.synchronizeIterate((user) => {
-      if (this.currentUser.id === user.id) {
-        user.name = this.currentUser.name;
-      }
-    });
-    this.publish();
-  }
 
   ngOnDestroy(): void {
-    this.sub.unsubscribe();
+    this.paramSubscribe.unsubscribe();
+    this.keyUpStoryNameSubcripton.unsubscribe();
   }
 
   generateUniqueId(): string {
@@ -161,13 +131,73 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.publish();
   }
 
-  private publish(): void {
-    this.stompHandler.publish(this.room, this.currentUser);
-
-  }
-
   kickUser(id: string) {
     this.room.users = this.room.users.filter((u) => u.id !== id);
     this.publish();
+  }
+
+  private updateStoryName(storyName): void {
+    this.room.currentStory.storyName = storyName;
+    this.publish();
+  }
+
+  private updateUsername(username): void {
+    this.currentUser.name = username;
+    this.synchronizeIterate((user) => {
+      if (this.currentUser.id === user.id) {
+        user.name = this.currentUser.name;
+      }
+    });
+    this.publish();
+  }
+
+  private createDebounce(sub: Subject<KeyboardEvent>): any {
+    return sub.pipe(
+      map(event => (event.target as any).value),
+      debounceTime(500),
+      distinctUntilChanged(),
+      mergeMap(search => of(search).pipe(
+        delay(500),
+      ))
+    );
+  }
+
+  private environmentInit() {
+    this.paramSubscribe = this.route.params.subscribe((param) => {
+      this.room = new Room(param.roomId, new Story(this.generateUniqueId()));
+      this.currentUser = new User(this.generateUniqueId(), this.cookie.get(this.cookieName));
+      this.room.users.push(this.currentUser);
+      this.stompHandler
+        .initializeWebSocketConnection(this.room, this.currentUser, (webSocket: WebSocketChatMessage) => this.updateRoom(webSocket.room));
+    });
+  }
+
+  private updateRoom(room: Room): void {
+    this.room = room;
+    this.checkIfAllUsersVotes(room.users);
+    this.checkIfImConnected();
+  }
+
+  private checkIfImConnected(): void {
+    if (!this.room.users.find(u => u.id === this.currentUser.id)) {
+      this.stompHandler.disconnect();
+      alert('You have been disconnected!');
+      this.router.navigate(['/']);
+    }
+  }
+
+  private checkIfAllUsersVotes(users: Array<User>): void {
+    if (users != null) {
+      const everyUserVoted = users.every((user) => !!user.vote || user.spectator);
+
+      if (everyUserVoted && !this.room.showVotes) {
+        this.showVotes(true);
+      }
+    }
+  }
+
+  private publish(): void {
+    this.stompHandler.publish(this.room, this.currentUser);
+
   }
 }

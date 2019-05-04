@@ -1,12 +1,16 @@
 <div class="">
   <div class="card">
     <div class="card-body">
-      <input class="form-control form-control-lg rounded-0" placeholder="Username" type="text" (keyup)="onKeyChangeUsername($event)" [(ngModel)]="currentUser.name">
+      <input (keyup)="keyUpUsernameSubject.next($event)" [(ngModel)]="currentUser.name"
+             class="form-control form-control-lg rounded-0"
+             placeholder="Username" type="text">
     </div>
     <div class="card-body">
       <div class="row">
         <div class="col-12">
-          <input type="text" class="form-control" placeholder="Story Name" name="storyName" id="storyName" [(ngModel)]="room.currentStory.storyName" (keyup)="onKeySetStoryName($event)"/>
+          <input (keyup)="keyUpStoryNameSubject.next($event)" [(ngModel)]="room.currentStory.storyName"
+                 class="form-control" id="storyName" name="storyName" placeholder="Story Name"
+                 type="text"/>
         </div>
       </div>
       <div class="row">
