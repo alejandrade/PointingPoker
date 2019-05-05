@@ -1,9 +1,10 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import * as SockJS from 'sockjs-client';
 import * as Stomp from 'stompjs';
 import {Room} from '../model/room';
 import {WebSocketChatMessage} from '../model/webSocketChatMessage';
 import {User} from '../model/user';
+import {Observable} from 'rxjs';
 
 
 @Injectable({
@@ -12,14 +13,19 @@ import {User} from '../model/user';
 export class StompHandlerService {
   private stompClient: any;
 
-  initializeWebSocketConnection(room: Room, user: User, setRoom: any) {
-    const prod = 'http://api.alejand.com/websocket';
-    const local = 'http://localhost:9999/websocket';
-    const ws = new SockJS(prod);
-    this.stompClient = Stomp.over(ws);
-    this.stompClient.connect({}, () => {
-      this.connectionSuccess(room, user, setRoom);
+  initializeWebSocketConnection(room: Room, user: User): Observable<any> {
+    const obs = new Observable<WebSocketChatMessage>(subscriber => {
+      const prod = 'http://api.alejand.com/websocket';
+      const local = 'http://localhost:9999/websocket';
+      const ws = new SockJS(prod);
+      this.stompClient = Stomp.over(ws);
+      this.stompClient.connect({}, () => {
+        this.connectionSuccess(room, user, (newRoom) => subscriber.next(newRoom));
+      }, (error) => {
+        subscriber.error(error);
+      });
     });
+    return obs;
   }
 
   publish(room: Room, user: User) {
@@ -45,7 +51,7 @@ export class StompHandlerService {
     }
   }
 
-  disconnect(): void{
+  disconnect(): void {
     this.stompClient.disconnect();
   }
 

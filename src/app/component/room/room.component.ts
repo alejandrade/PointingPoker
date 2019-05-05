@@ -4,9 +4,8 @@ import {Room} from '../../model/room';
 import {User} from '../../model/user';
 import {Story} from '../../model/story';
 import {StompHandlerService} from '../../service/stomp-handler.service';
-import {WebSocketChatMessage} from '../../model/webSocketChatMessage';
 import {CookieService} from 'ngx-cookie-service';
-import {Subject, Subscription} from 'rxjs';
+import {Observable, Subject, Subscription} from 'rxjs';
 import {debounceTime, delay, map} from 'rxjs/operators';
 import {distinctUntilChanged} from 'rxjs/internal/operators/distinctUntilChanged';
 import {mergeMap} from 'rxjs/internal/operators/mergeMap';
@@ -30,6 +29,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   private keyUpStoryNameSubcripton: Subscription;
   private keyUpUsernameSubscription: Subscription;
   private publishSubscription: Subscription;
+  private stompConnection: Observable<any>;
 
   constructor(private route: ActivatedRoute,
               private stompHandler: StompHandlerService,
@@ -176,9 +176,12 @@ export class RoomComponent implements OnInit, OnDestroy {
       this.room = new Room(param.roomId, new Story(this.generateUniqueId()));
       this.currentUser = new User(this.generateUniqueId(), this.cookie.get(this.cookieName));
       this.room.users.push(this.currentUser);
-      this.stompHandler
-        .initializeWebSocketConnection(this.room, this.currentUser, (webSocket: WebSocketChatMessage) => this.updateRoom(webSocket.room));
+      this.stompConnection = this.stompHandler
+        .initializeWebSocketConnection(this.room, this.currentUser);
+      this.stompConnection.subscribe((webSocket) => this.updateRoom(webSocket.room), () => this.disconectAction());
     });
+
+
   }
 
   private updateRoom(room: Room): void {
@@ -190,9 +193,13 @@ export class RoomComponent implements OnInit, OnDestroy {
   private checkIfImConnected(): void {
     if (!this.room.users.find(u => u.id === this.currentUser.id)) {
       this.stompHandler.disconnect();
-      alert('You have been disconnected!');
-      this.router.navigate(['/']);
+      this.disconectAction();
     }
+  }
+
+  private disconectAction(): void {
+    alert('You have been disconnected!');
+    this.router.navigate(['/']);
   }
 
   private checkIfAllUsersVotes(users: Array<User>): void {
