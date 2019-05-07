@@ -21,8 +21,6 @@ export class StompHandlerService {
       this.stompClient = Stomp.over(ws);
       this.stompClient.connect({}, () => {
         this.connectionSuccess(room, user, (newRoom) => subscriber.next(newRoom));
-      }, (error) => {
-        subscriber.error(error);
       });
     });
     return obs;
