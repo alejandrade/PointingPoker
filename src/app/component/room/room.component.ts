@@ -178,7 +178,7 @@ export class RoomComponent implements OnInit, OnDestroy {
       this.room.users.push(this.currentUser);
       this.stompConnection = this.stompHandler
         .initializeWebSocketConnection(this.room, this.currentUser);
-      this.stompConnection.subscribe((webSocket) => this.updateRoom(webSocket.room), () => this.disconectAction());
+      this.stompConnection.subscribe((webSocket) => this.updateRoom(webSocket.room));
     });
 
 
